@@ -38,9 +38,11 @@ export const fetchUserOrders = createAsyncThunk(
     try {
       const result = await getOrdersApi();
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('fetchUserOrders: ошибка:', error);
-      return rejectWithValue(error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );

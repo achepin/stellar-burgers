@@ -32,13 +32,15 @@ export const checkUserAuth = createAsyncThunk(
     try {
       const response = await getUserApi();
       return response.user;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 401 ошибка - это нормально, пользователь просто не авторизован
-      if (error.message?.includes(HTTP_STATUS_UNAUTHORIZED)) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage?.includes(HTTP_STATUS_UNAUTHORIZED)) {
         return rejectWithValue('unauthorized');
       }
       // Для других ошибок пробрасываем их дальше
-      return rejectWithValue(error.message);
+      return rejectWithValue(errorMessage);
     }
   }
 );

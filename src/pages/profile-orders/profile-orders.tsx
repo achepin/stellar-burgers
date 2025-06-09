@@ -6,11 +6,14 @@ import { fetchUserOrders } from '../../services/slices/ordersSlice';
 
 export const ProfileOrders: FC = () => {
   const dispatch = useDispatch();
-  const { userOrders } = useSelector((state) => state.orders);
+  const { userOrders, loading, error } = useSelector((state) => state.orders);
+  const { user, isAuthChecked } = useSelector((state) => state.user);
 
   useEffect(() => {
-    dispatch(fetchUserOrders());
-  }, [dispatch]);
+    if (isAuthChecked && user) {
+      dispatch(fetchUserOrders());
+    }
+  }, [dispatch, isAuthChecked, user]);
 
   return <ProfileOrdersUI orders={userOrders} />;
 };

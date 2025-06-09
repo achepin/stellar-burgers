@@ -34,7 +34,15 @@ export const fetchOrders = createAsyncThunk(
 
 export const fetchUserOrders = createAsyncThunk(
   'orders/fetchUserOrders',
-  async () => await getOrdersApi()
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = await getOrdersApi();
+      return result;
+    } catch (error: any) {
+      console.error('fetchUserOrders: ошибка:', error);
+      return rejectWithValue(error.message);
+    }
+  }
 );
 
 export const fetchOrderByNumber = createAsyncThunk(

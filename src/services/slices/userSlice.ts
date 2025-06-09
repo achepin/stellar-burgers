@@ -27,11 +27,18 @@ export const checkUserAuth = createAsyncThunk(
   'user/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('checkUserAuth: начинаем проверку аутентификации');
       const response = await getUserApi();
+      console.log(
+        'checkUserAuth: пользователь авторизован:',
+        response.user?.email
+      );
       return response.user;
     } catch (error: any) {
+      console.log('checkUserAuth: ошибка:', error.message);
       // 401 ошибка - это нормально, пользователь просто не авторизован
       if (error.message?.includes('401')) {
+        console.log('checkUserAuth: пользователь не авторизован (401)');
         return rejectWithValue('unauthorized');
       }
       // Для других ошибок пробрасываем их дальше
@@ -44,7 +51,11 @@ export const loginUser = createAsyncThunk(
   'user/login',
   async (loginData: TLoginData) => {
     const response = await loginUserApi(loginData);
-    setCookie('accessToken', response.accessToken);
+    // Убираем префикс "Bearer " из токена перед сохранением
+    const cleanAccessToken = response.accessToken.startsWith('Bearer ')
+      ? response.accessToken.substring(7)
+      : response.accessToken;
+    setCookie('accessToken', cleanAccessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     return response.user;
   }
@@ -54,7 +65,11 @@ export const registerUser = createAsyncThunk(
   'user/register',
   async (registerData: TRegisterData) => {
     const response = await registerUserApi(registerData);
-    setCookie('accessToken', response.accessToken);
+    // Убираем префикс "Bearer " из токена перед сохранением
+    const cleanAccessToken = response.accessToken.startsWith('Bearer ')
+      ? response.accessToken.substring(7)
+      : response.accessToken;
+    setCookie('accessToken', cleanAccessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     return response.user;
   }

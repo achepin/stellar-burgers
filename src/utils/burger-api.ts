@@ -31,7 +31,11 @@ export const refreshToken = (): Promise<TRefreshResponse> =>
         return Promise.reject(refreshData);
       }
       localStorage.setItem('refreshToken', refreshData.refreshToken);
-      setCookie('accessToken', refreshData.accessToken);
+      // Убираем префикс "Bearer " из токена перед сохранением
+      const cleanAccessToken = refreshData.accessToken.startsWith('Bearer ')
+        ? refreshData.accessToken.substring(7)
+        : refreshData.accessToken;
+      setCookie('accessToken', cleanAccessToken);
       return refreshData;
     });
 
@@ -46,8 +50,9 @@ export const fetchWithRefresh = async <T>(
     if ((err as { message: string }).message === 'jwt expired') {
       const refreshData = await refreshToken();
       if (options.headers) {
+        // Токен уже очищен от "Bearer " в refreshToken(), добавляем "Bearer " для заголовка
         (options.headers as { [key: string]: string }).authorization =
-          refreshData.accessToken;
+          `Bearer ${getCookie('accessToken')}`;
       }
       const res = await fetch(url, options);
       return await checkResponse<T>(res);
@@ -87,17 +92,38 @@ export const getFeedsApi = () =>
       return Promise.reject(data);
     });
 
-export const getOrdersApi = () =>
-  fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
+export const getOrdersApi = () => {
+  const accessToken = getCookie('accessToken');
+  console.log(
+    'getOrdersApi: начинаем запрос, токен:',
+    accessToken ? 'есть' : 'отсутствует'
+  );
+
+  return fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      authorization: `Bearer ${accessToken}`
     } as HeadersInit
-  }).then((data) => {
-    if (data?.success) return data.orders;
-    return Promise.reject(data);
-  });
+  })
+    .then((data) => {
+      console.log('getOrdersApi: получили ответ:', data);
+      if (data?.success) {
+        console.log(
+          'getOrdersApi: возвращаем orders:',
+          data.orders?.length || 0,
+          'заказов'
+        );
+        return data.orders;
+      }
+      console.error('getOrdersApi: неуспешный ответ:', data);
+      return Promise.reject(data);
+    })
+    .catch((error) => {
+      console.error('getOrdersApi: ошибка запроса:', error);
+      throw error;
+    });
+};
 
 type TNewOrderResponse = TServerResponse<{
   order: TOrder;
@@ -109,7 +135,7 @@ export const orderBurgerApi = (data: string[]) =>
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      authorization: `Bearer ${getCookie('accessToken')}`
     } as HeadersInit,
     body: JSON.stringify({
       ingredients: data
@@ -209,7 +235,7 @@ type TUserResponse = TServerResponse<{ user: TUser }>;
 export const getUserApi = () =>
   fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     headers: {
-      authorization: getCookie('accessToken')
+      authorization: `Bearer ${getCookie('accessToken')}`
     } as HeadersInit
   });
 
@@ -218,7 +244,7 @@ export const updateUserApi = (user: Partial<TRegisterData>) =>
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      authorization: `Bearer ${getCookie('accessToken')}`
     } as HeadersInit,
     body: JSON.stringify(user)
   });

@@ -23,10 +23,22 @@ export const initialState: TUserState = {
   error: null
 };
 
-export const checkUserAuth = createAsyncThunk('user/checkAuth', async () => {
-  const response = await getUserApi();
-  return response.user;
-});
+export const checkUserAuth = createAsyncThunk(
+  'user/checkAuth',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getUserApi();
+      return response.user;
+    } catch (error: any) {
+      // 401 ошибка - это нормально, пользователь просто не авторизован
+      if (error.message?.includes('401')) {
+        return rejectWithValue('unauthorized');
+      }
+      // Для других ошибок пробрасываем их дальше
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const loginUser = createAsyncThunk(
   'user/login',
@@ -81,7 +93,8 @@ const userSlice = createSlice({
       })
       .addCase(checkUserAuth.rejected, (state, action) => {
         state.isAuthChecked = true;
-        state.error = action.error.message || 'Ошибка проверки авторизации';
+        // Не показываем ошибку для 401 - это нормальное состояние неавторизованного пользователя
+        state.error = null;
       })
       .addCase(loginUser.pending, (state) => {
         state.error = null;

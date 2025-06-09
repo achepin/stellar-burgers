@@ -1,5 +1,6 @@
 import { FC, useMemo } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
+import { useNavigate } from 'react-router-dom';
 import {
   createOrder,
   clearCurrentOrder
@@ -14,6 +15,7 @@ import { BurgerConstructorUI } from '@ui';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { bun, ingredients } = useSelector((state) => state.burgerConstructor);
   const { currentOrder, loading: orderRequest } = useSelector(
     (state) => state.orders
@@ -28,7 +30,13 @@ export const BurgerConstructor: FC = () => {
   const orderModalData = currentOrder;
 
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest || !user) return;
+    if (!constructorItems.bun || orderRequest) return;
+
+    // Если пользователь не авторизован, перенаправляем на страницу входа
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     const ingredientIds = [
       constructorItems.bun._id,

@@ -3,9 +3,8 @@ import { useSelector } from 'react-redux';
 
 import { TOrder } from '@utils-types';
 import { FeedInfoUI } from '../ui/feed-info';
-import { RootState } from '../../services/store';
-
-const MAX_ORDERS_TO_SHOW = 20;
+import { selectOrdersState } from '../../services/selectors/ordersSelectors';
+import { MAX_ORDERS_TO_SHOW } from '../../utils/constants';
 
 const getOrders = (orders: TOrder[], status: string): number[] =>
   orders
@@ -14,9 +13,7 @@ const getOrders = (orders: TOrder[], status: string): number[] =>
     .slice(0, MAX_ORDERS_TO_SHOW);
 
 export const FeedInfo: FC = () => {
-  const { orders, total, totalToday } = useSelector(
-    (state: RootState) => state.orders
-  );
+  const { orders, total, totalToday } = useSelector(selectOrdersState);
 
   const readyOrders = getOrders(orders, 'done');
 

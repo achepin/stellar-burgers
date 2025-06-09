@@ -5,13 +5,12 @@ import { OrderCardProps } from './type';
 import { TIngredient } from '@utils-types';
 import { OrderCardUI } from '../ui/order-card';
 import { useSelector } from '../../services/store';
-
-const MAX_VISIBLE_INGREDIENTS = 6; // Максимальное количество отображаемых ингредиентов в карточке заказа
+import { selectIngredients } from '@selectors';
+import { MAX_VISIBLE_INGREDIENTS } from '../../utils/constants';
 
 export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
   const location = useLocation();
-
-  const { ingredients } = useSelector((state) => state.ingredients);
+  const ingredients = useSelector(selectIngredients);
 
   const orderInfo = useMemo(() => {
     if (!ingredients.length) {

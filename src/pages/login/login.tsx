@@ -2,6 +2,10 @@ import { FC, SyntheticEvent, useState, useEffect } from 'react';
 import { LoginUI } from '@ui-pages';
 import { useDispatch, useSelector } from '../../services/store';
 import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  selectUser,
+  selectUserError
+} from '../../services/selectors/userSelectors';
 import { loginUser } from '../../services/slices/userSlice';
 
 export const Login: FC = () => {
@@ -11,7 +15,8 @@ export const Login: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { error, user } = useSelector((state) => state.user);
+  const error = useSelector(selectUserError);
+  const user = useSelector(selectUser);
 
   // Перенаправление после успешной авторизации
   useEffect(() => {

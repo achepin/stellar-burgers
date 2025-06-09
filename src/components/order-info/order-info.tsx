@@ -6,14 +6,22 @@ import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
 import { RootState, AppDispatch } from '../../services/store';
 import { fetchOrderByNumber } from '../../services/slices/ordersSlice';
+import {
+  selectIngredients,
+  selectOrders,
+  selectUserOrders,
+  selectCurrentOrder,
+  selectOrdersLoading
+} from '@selectors';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams<{ number: string }>();
   const dispatch = useDispatch<AppDispatch>();
-  const { ingredients } = useSelector((state: RootState) => state.ingredients);
-  const { orders, userOrders, currentOrder, loading } = useSelector(
-    (state: RootState) => state.orders
-  );
+  const ingredients = useSelector(selectIngredients);
+  const orders = useSelector(selectOrders);
+  const userOrders = useSelector(selectUserOrders);
+  const currentOrder = useSelector(selectCurrentOrder);
+  const loading = useSelector(selectOrdersLoading);
 
   // Находим заказ по номеру в общей ленте, заказах пользователя или текущем заказе
   const orderData = useMemo(() => {

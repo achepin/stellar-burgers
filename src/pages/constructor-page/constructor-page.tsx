@@ -1,4 +1,5 @@
 import { useSelector } from '../../services/store';
+import { selectIngredientsLoading } from '../../services/selectors/ingredientsSelectors';
 
 import styles from './constructor-page.module.css';
 
@@ -8,9 +9,7 @@ import { Preloader } from '../../components/ui';
 import { FC } from 'react';
 
 export const ConstructorPage: FC = () => {
-  const { loading: isIngredientsLoading } = useSelector(
-    (state) => state.ingredients
-  );
+  const isIngredientsLoading = useSelector(selectIngredientsLoading);
 
   return (
     <>

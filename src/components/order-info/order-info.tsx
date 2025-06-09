@@ -1,10 +1,9 @@
 import { FC, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
-import { RootState, AppDispatch } from '../../services/store';
 import { fetchOrderByNumber } from '../../services/slices/ordersSlice';
 import {
   selectIngredients,
@@ -16,7 +15,7 @@ import {
 
 export const OrderInfo: FC = () => {
   const { number } = useParams<{ number: string }>();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const ingredients = useSelector(selectIngredients);
   const orders = useSelector(selectOrders);
   const userOrders = useSelector(selectUserOrders);

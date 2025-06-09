@@ -27,10 +27,7 @@ export const initialState: TOrdersState = {
   error: null
 };
 
-export const fetchOrders = createAsyncThunk(
-  'orders/fetchOrders',
-  async () => await getFeedsApi()
-);
+export const fetchOrders = createAsyncThunk('orders/fetchOrders', getFeedsApi);
 
 export const fetchUserOrders = createAsyncThunk(
   'orders/fetchUserOrders',

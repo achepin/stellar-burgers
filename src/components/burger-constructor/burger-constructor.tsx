@@ -14,7 +14,7 @@ import { BurgerConstructorUI } from '@ui';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
-  const { bun, ingredients } = useSelector((state) => state.constructor);
+  const { bun, ingredients } = useSelector((state) => state.burgerConstructor);
   const { currentOrder, loading: orderRequest } = useSelector(
     (state) => state.orders
   );

@@ -1,6 +1,7 @@
-import { FC, SyntheticEvent, useState } from 'react';
+import { FC, SyntheticEvent, useState, useEffect } from 'react';
 import { LoginUI } from '@ui-pages';
 import { useDispatch, useSelector } from '../../services/store';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { loginUser } from '../../services/slices/userSlice';
 
 export const Login: FC = () => {
@@ -8,7 +9,17 @@ export const Login: FC = () => {
   const [password, setPassword] = useState('');
 
   const dispatch = useDispatch();
-  const { error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { error, user } = useSelector((state) => state.user);
+
+  // Перенаправление после успешной авторизации
+  useEffect(() => {
+    if (user) {
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location.state]);
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();

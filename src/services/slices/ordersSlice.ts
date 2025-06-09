@@ -111,6 +111,10 @@ const ordersSlice = createSlice({
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
         state.currentOrder = action.payload;
+        // Добавляем новый заказ в начало списка пользовательских заказов
+        if (action.payload) {
+          state.userOrders = [action.payload, ...state.userOrders];
+        }
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;

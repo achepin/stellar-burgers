@@ -1,7 +1,6 @@
-import { FC, SyntheticEvent, useState, useEffect } from 'react';
+import { FC, SyntheticEvent, useState } from 'react';
 import { RegisterUI } from '@ui-pages';
 import { useDispatch, useSelector } from '../../services/store';
-import { useNavigate } from 'react-router-dom';
 import {
   selectUser,
   selectUserError
@@ -14,16 +13,8 @@ export const Register: FC = () => {
   const [password, setPassword] = useState('');
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const error = useSelector(selectUserError);
   const user = useSelector(selectUser);
-
-  // Перенаправление после успешной регистрации
-  useEffect(() => {
-    if (user) {
-      navigate('/', { replace: true });
-    }
-  }, [user, navigate]);
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();

@@ -11,6 +11,9 @@ import {
 } from '../../utils/burger-api';
 import { setCookie, deleteCookie } from '../../utils/cookie';
 
+const HTTP_STATUS_UNAUTHORIZED = '401';
+const BEARER_PREFIX = 'Bearer ';
+
 export interface TUserState {
   isAuthChecked: boolean;
   user: TUser | null;
@@ -27,18 +30,11 @@ export const checkUserAuth = createAsyncThunk(
   'user/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('checkUserAuth: начинаем проверку аутентификации');
       const response = await getUserApi();
-      console.log(
-        'checkUserAuth: пользователь авторизован:',
-        response.user?.email
-      );
       return response.user;
     } catch (error: any) {
-      console.log('checkUserAuth: ошибка:', error.message);
       // 401 ошибка - это нормально, пользователь просто не авторизован
-      if (error.message?.includes('401')) {
-        console.log('checkUserAuth: пользователь не авторизован (401)');
+      if (error.message?.includes(HTTP_STATUS_UNAUTHORIZED)) {
         return rejectWithValue('unauthorized');
       }
       // Для других ошибок пробрасываем их дальше
@@ -52,8 +48,8 @@ export const loginUser = createAsyncThunk(
   async (loginData: TLoginData) => {
     const response = await loginUserApi(loginData);
     // Убираем префикс "Bearer " из токена перед сохранением
-    const cleanAccessToken = response.accessToken.startsWith('Bearer ')
-      ? response.accessToken.substring(7)
+    const cleanAccessToken = response.accessToken.startsWith(BEARER_PREFIX)
+      ? response.accessToken.substring(BEARER_PREFIX.length)
       : response.accessToken;
     setCookie('accessToken', cleanAccessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
@@ -66,8 +62,8 @@ export const registerUser = createAsyncThunk(
   async (registerData: TRegisterData) => {
     const response = await registerUserApi(registerData);
     // Убираем префикс "Bearer " из токена перед сохранением
-    const cleanAccessToken = response.accessToken.startsWith('Bearer ')
-      ? response.accessToken.substring(7)
+    const cleanAccessToken = response.accessToken.startsWith(BEARER_PREFIX)
+      ? response.accessToken.substring(BEARER_PREFIX.length)
       : response.accessToken;
     setCookie('accessToken', cleanAccessToken);
     localStorage.setItem('refreshToken', response.refreshToken);

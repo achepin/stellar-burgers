@@ -2,9 +2,12 @@ import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 
 const URL = process.env.BURGER_API_URL;
+const BEARER_PREFIX = 'Bearer ';
 
-const checkResponse = <T>(res: Response): Promise<T> =>
-  res.ok ? res.json() : res.json().then((err) => Promise.reject(err));
+const checkResponse = <T>(response: Response): Promise<T> =>
+  response.ok
+    ? response.json()
+    : response.json().then((error) => Promise.reject(error));
 
 type TServerResponse<T> = {
   success: boolean;
@@ -25,15 +28,15 @@ export const refreshToken = (): Promise<TRefreshResponse> =>
       token: localStorage.getItem('refreshToken')
     })
   })
-    .then((res) => checkResponse<TRefreshResponse>(res))
+    .then((response) => checkResponse<TRefreshResponse>(response))
     .then((refreshData) => {
       if (!refreshData.success) {
         return Promise.reject(refreshData);
       }
       localStorage.setItem('refreshToken', refreshData.refreshToken);
       // Убираем префикс "Bearer " из токена перед сохранением
-      const cleanAccessToken = refreshData.accessToken.startsWith('Bearer ')
-        ? refreshData.accessToken.substring(7)
+      const cleanAccessToken = refreshData.accessToken.startsWith(BEARER_PREFIX)
+        ? refreshData.accessToken.substring(BEARER_PREFIX.length)
         : refreshData.accessToken;
       setCookie('accessToken', cleanAccessToken);
       return refreshData;
@@ -44,20 +47,20 @@ export const fetchWithRefresh = async <T>(
   options: RequestInit
 ) => {
   try {
-    const res = await fetch(url, options);
-    return await checkResponse<T>(res);
-  } catch (err) {
-    if ((err as { message: string }).message === 'jwt expired') {
+    const response = await fetch(url, options);
+    return await checkResponse<T>(response);
+  } catch (error) {
+    if ((error as { message: string }).message === 'jwt expired') {
       const refreshData = await refreshToken();
       if (options.headers) {
         // Токен уже очищен от "Bearer " в refreshToken(), добавляем "Bearer " для заголовка
         (options.headers as { [key: string]: string }).authorization =
-          `Bearer ${getCookie('accessToken')}`;
+          `${BEARER_PREFIX}${getCookie('accessToken')}`;
       }
-      const res = await fetch(url, options);
-      return await checkResponse<T>(res);
+      const response = await fetch(url, options);
+      return await checkResponse<T>(response);
     } else {
-      return Promise.reject(err);
+      return Promise.reject(error);
     }
   }
 };
@@ -78,7 +81,7 @@ type TOrdersResponse = TServerResponse<{
 
 export const getIngredientsApi = () =>
   fetch(`${URL}/ingredients`)
-    .then((res) => checkResponse<TIngredientsResponse>(res))
+    .then((response) => checkResponse<TIngredientsResponse>(response))
     .then((data) => {
       if (data?.success) return data.data;
       return Promise.reject(data);
@@ -86,7 +89,7 @@ export const getIngredientsApi = () =>
 
 export const getFeedsApi = () =>
   fetch(`${URL}/orders/all`)
-    .then((res) => checkResponse<TFeedsResponse>(res))
+    .then((response) => checkResponse<TFeedsResponse>(response))
     .then((data) => {
       if (data?.success) return data;
       return Promise.reject(data);
@@ -94,29 +97,18 @@ export const getFeedsApi = () =>
 
 export const getOrdersApi = () => {
   const accessToken = getCookie('accessToken');
-  console.log(
-    'getOrdersApi: начинаем запрос, токен:',
-    accessToken ? 'есть' : 'отсутствует'
-  );
 
   return fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: `Bearer ${accessToken}`
+      authorization: `${BEARER_PREFIX}${accessToken}`
     } as HeadersInit
   })
     .then((data) => {
-      console.log('getOrdersApi: получили ответ:', data);
       if (data?.success) {
-        console.log(
-          'getOrdersApi: возвращаем orders:',
-          data.orders?.length || 0,
-          'заказов'
-        );
         return data.orders;
       }
-      console.error('getOrdersApi: неуспешный ответ:', data);
       return Promise.reject(data);
     })
     .catch((error) => {
@@ -130,15 +122,15 @@ type TNewOrderResponse = TServerResponse<{
   name: string;
 }>;
 
-export const orderBurgerApi = (data: string[]) =>
+export const orderBurgerApi = (ingredientIds: string[]) =>
   fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: `Bearer ${getCookie('accessToken')}`
+      authorization: `${BEARER_PREFIX}${getCookie('accessToken')}`
     } as HeadersInit,
     body: JSON.stringify({
-      ingredients: data
+      ingredients: ingredientIds
     })
   }).then((data) => {
     if (data?.success) return data;
@@ -235,7 +227,7 @@ type TUserResponse = TServerResponse<{ user: TUser }>;
 export const getUserApi = () =>
   fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     headers: {
-      authorization: `Bearer ${getCookie('accessToken')}`
+      authorization: `${BEARER_PREFIX}${getCookie('accessToken')}`
     } as HeadersInit
   });
 
@@ -244,7 +236,7 @@ export const updateUserApi = (user: Partial<TRegisterData>) =>
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: `Bearer ${getCookie('accessToken')}`
+      authorization: `${BEARER_PREFIX}${getCookie('accessToken')}`
     } as HeadersInit,
     body: JSON.stringify(user)
   });

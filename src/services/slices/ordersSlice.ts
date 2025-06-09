@@ -45,11 +45,13 @@ export const fetchUserOrders = createAsyncThunk(
   }
 );
 
+const FIRST_ORDER_INDEX = 0;
+
 export const fetchOrderByNumber = createAsyncThunk(
   'orders/fetchOrderByNumber',
   async (number: number) => {
     const response = await getOrderByNumberApi(number);
-    return response.orders[0];
+    return response.orders[FIRST_ORDER_INDEX];
   }
 );
 

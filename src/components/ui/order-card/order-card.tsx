@@ -10,6 +10,8 @@ import styles from './order-card.module.css';
 import { OrderCardUIProps } from './type';
 import { OrderStatus } from '@components';
 
+const ORDER_NUMBER_PADDING_LENGTH = 6; // Длина номера заказа с ведущими нулями
+
 export const OrderCardUI: FC<OrderCardUIProps> = memo(
   ({ orderInfo, maxIngredients, locationState }) => (
     <Link
@@ -20,7 +22,7 @@ export const OrderCardUI: FC<OrderCardUIProps> = memo(
     >
       <div className={styles.order_info}>
         <span className={`text text_type_digits-default ${styles.number}`}>
-          #{String(orderInfo.number).padStart(6, '0')}
+          #{String(orderInfo.number).padStart(ORDER_NUMBER_PADDING_LENGTH, '0')}
         </span>
         <span className='text text_type_main-default text_color_inactive'>
           <FormattedDate date={orderInfo.date} />
@@ -35,12 +37,13 @@ export const OrderCardUI: FC<OrderCardUIProps> = memo(
       <div className={`pt-6 ${styles.order_content}`}>
         <ul className={styles.ingredients}>
           {orderInfo.ingredientsToShow.map((ingredient, index) => {
-            let zIndex = maxIngredients - index;
-            let right = 20 * index;
+            const INGREDIENT_OVERLAP_OFFSET = 20;
+            const zIndexValue = maxIngredients - index;
+            const rightOffset = INGREDIENT_OVERLAP_OFFSET * index;
             return (
               <li
                 className={styles.img_wrap}
-                style={{ zIndex: zIndex, right: right }}
+                style={{ zIndex: zIndexValue, right: rightOffset }}
                 key={index}
               >
                 <img

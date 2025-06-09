@@ -73,10 +73,11 @@ export const BurgerConstructor: FC = () => {
 
   const price = useMemo(
     () =>
+      // Булка считается дважды (верх и низ)
       (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
       (constructorItems.ingredients || []).reduce(
         (s: number, v: TConstructorIngredient) => s + v.price,
-        0
+        0 // Начальное значение суммы
       ),
     [constructorItems]
   );

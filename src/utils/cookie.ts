@@ -15,6 +15,8 @@ export function setCookie(
   value: string,
   props: { [key: string]: string | number | Date | boolean } = {}
 ) {
+  const MILLISECONDS_PER_SECOND = 1000;
+
   props = {
     path: '/',
     ...props
@@ -23,7 +25,7 @@ export function setCookie(
   let exp = props.expires;
   if (exp && typeof exp === 'number') {
     const d = new Date();
-    d.setTime(d.getTime() + exp * 1000);
+    d.setTime(d.getTime() + exp * MILLISECONDS_PER_SECOND);
     exp = props.expires = d;
   }
 
@@ -43,5 +45,6 @@ export function setCookie(
 }
 
 export function deleteCookie(name: string) {
-  setCookie(name, '', { expires: -1 });
+  const EXPIRE_IMMEDIATELY = -1;
+  setCookie(name, '', { expires: EXPIRE_IMMEDIATELY });
 }

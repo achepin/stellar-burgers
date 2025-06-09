@@ -18,7 +18,7 @@ export const IngredientsCategory = forwardRef<
     // Считаем ингредиенты в конструкторе
     if (constructorIngredients) {
       constructorIngredients.forEach((ingredient: TIngredient) => {
-        if (!counters[ingredient._id]) counters[ingredient._id] = 0;
+        if (!counters[ingredient._id]) counters[ingredient._id] = 0; // Инициализация счетчика
         counters[ingredient._id]++;
       });
     }
